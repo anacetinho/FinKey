@@ -4,25 +4,43 @@ class PagesController < ApplicationController
   skip_authentication only: :redis_configuration_error
 
   def dashboard
-    @balance_sheet = Current.family.balance_sheet
-    @accounts = Current.family.accounts.visible.with_attached_logo
+    # Cache expensive calculations for 5 minutes to improve performance
+    cache_key = "dashboard_#{Current.family.id}_#{params[:cashflow_period] || 'last_30_days'}_#{Current.family.updated_at.to_i}"
 
-    period_param = params[:cashflow_period]
-    @cashflow_period = if period_param.present?
+    @balance_sheet, @accounts, @cashflow_sankey_data = Rails.cache.fetch(cache_key, expires_in: 5.minutes) do
+      balance_sheet = Current.family.balance_sheet
+      accounts = Current.family.accounts.visible.includes(:logo_attachment)
+
+      period_param = params[:cashflow_period]
+      cashflow_period = if period_param.present?
+        begin
+          Period.from_key(period_param)
+        rescue Period::InvalidKeyError
+          Period.last_30_days
+        end
+      else
+        Period.last_30_days
+      end
+
+      family_currency = Current.family.currency
+      income_totals = Current.family.income_statement.income_totals(period: cashflow_period)
+      expense_totals = Current.family.income_statement.expense_totals(period: cashflow_period)
+
+      sankey_data = build_cashflow_sankey_data(income_totals, expense_totals, family_currency)
+
+      [balance_sheet, accounts, sankey_data]
+    end
+
+    # Set period for view (not cached since it's simple)
+    @cashflow_period = if params[:cashflow_period].present?
       begin
-        Period.from_key(period_param)
+        Period.from_key(params[:cashflow_period])
       rescue Period::InvalidKeyError
         Period.last_30_days
       end
     else
       Period.last_30_days
     end
-
-    family_currency = Current.family.currency
-    income_totals = Current.family.income_statement.income_totals(period: @cashflow_period)
-    expense_totals = Current.family.income_statement.expense_totals(period: @cashflow_period)
-
-    @cashflow_sankey_data = build_cashflow_sankey_data(income_totals, expense_totals, family_currency)
 
     @breadcrumbs = [ [ "Home", root_path ], [ "Dashboard", nil ] ]
   end
@@ -82,9 +100,9 @@ class PagesController < ApplicationController
         next if ct.category.parent_id.present?
 
         val = ct.total.to_f.round(2)
-        next if val.zero?
+        next if val.to_f == 0
 
-        percentage_of_total_income = total_income_val.zero? ? 0 : (val / total_income_val * 100).round(1)
+        percentage_of_total_income = total_income_val.to_f == 0 ? 0 : (val / total_income_val * 100).round(1)
 
         node_display_name = ct.category.name
         node_color = ct.category.color.presence || Category::COLORS.sample
@@ -112,9 +130,9 @@ class PagesController < ApplicationController
         next if ct.category.parent_id.present?
 
         val = ct.total.to_f.round(2)
-        next if val.zero?
+        next if val.to_f == 0
 
-        percentage_of_total_expense = total_expense_val.zero? ? 0 : (val / total_expense_val * 100).round(1)
+        percentage_of_total_expense = total_expense_val.to_f == 0 ? 0 : (val / total_expense_val * 100).round(1)
 
         node_display_name = ct.category.name
         node_color = ct.category.color.presence || Category::UNCATEGORIZED_COLOR
@@ -138,8 +156,8 @@ class PagesController < ApplicationController
 
       # --- Process Surplus ---
       leftover = (total_income_val - total_expense_val).round(2)
-      if leftover.positive?
-        percentage_of_total_income_for_surplus = total_income_val.zero? ? 0 : (leftover / total_income_val * 100).round(1)
+      if leftover.to_f > 0
+        percentage_of_total_income_for_surplus = total_income_val.to_f == 0 ? 0 : (leftover / total_income_val * 100).round(1)
         surplus_idx = add_node.call("surplus_node", "Surplus", leftover, percentage_of_total_income_for_surplus, "var(--color-success)")
         links << { source: cash_flow_idx, target: surplus_idx, value: leftover, color: "var(--color-success)", percentage: percentage_of_total_income_for_surplus }
       end

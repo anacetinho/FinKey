@@ -1,0 +1,35 @@
+2025-09-14 22:15:44.919 | == 20250826075401 CreateFutureEvents: migrating ===============================
+2025-09-14 22:15:44.919 | -- create_table(:future_events, {id: :uuid})
+2025-09-14 22:15:44.919 |    -> 0.0148s
+2025-09-14 22:15:44.919 | -- add_index(:future_events, [:family_id, :date])
+2025-09-14 22:15:44.919 |    -> 0.0027s
+2025-09-14 22:15:44.919 | -- add_index(:future_events, :event_type)
+2025-09-14 22:15:44.919 |    -> 0.0032s
+2025-09-14 22:15:44.919 | == 20250826075401 CreateFutureEvents: migrated (0.0210s) ======================
+2025-09-14 22:15:44.919 | 
+2025-09-14 22:15:44.919 | == 20250829191844 AddAllowsNegativeExpensesToCategories: migrating ============
+2025-09-14 22:15:44.919 | -- add_column(:categories, :allows_negative_expenses, :boolean, {null: false, default: false})
+2025-09-14 22:15:44.919 |    -> 0.0038s
+2025-09-14 22:15:44.919 | == 20250829191844 AddAllowsNegativeExpensesToCategories: migrated (0.0048s) ===
+2025-09-14 22:15:44.919 | 
+2025-09-14 22:15:44.919 | == 20250830120547 FixExpenseReimbursementAmounts: migrating ===================
+2025-09-14 22:15:44.919 | -- No expense reimbursement entries with negative amounts found - nothing to fix
+2025-09-14 22:15:44.919 | == 20250830120547 FixExpenseReimbursementAmounts: migrated (0.0015s) ==========
+2025-09-14 22:15:44.919 | 
+2025-09-14 22:15:44.919 | Loading seed file: oauth_applications.rb
+2025-09-14 22:15:44.919 | Created OAuth applications:
+2025-09-14 22:15:44.919 | iOS App - Client ID: nnhR_bNDKecD2HdJVuEnYUy0AcK9pruQXyQuXgEFMl0
+2025-09-14 22:15:44.919 | 
+2025-09-14 22:15:44.919 | External developers should use API keys instead of OAuth.
+2025-09-14 22:15:45.801 | => Booting Puma
+2025-09-14 22:15:45.801 | => Rails 7.2.2.1 application starting in production 
+2025-09-14 22:15:45.801 | => Run `bin/rails server --help` for more startup options
+2025-09-14 22:15:47.080 | Puma starting in single mode...
+2025-09-14 22:15:47.080 | * Puma version: 6.6.0 ("Return to Forever")
+2025-09-14 22:15:47.080 | * Ruby version: ruby 3.4.4 (2025-05-14 revision a38531fd3f) +YJIT +PRISM [aarch64-linux]
+2025-09-14 22:15:47.080 | *  Min threads: 3
+2025-09-14 22:15:47.080 | *  Max threads: 3
+2025-09-14 22:15:47.080 | *  Environment: production
+2025-09-14 22:15:47.080 | *          PID: 1
+2025-09-14 22:15:47.080 | * Listening on http://0.0.0.0:3000
+2025-09-14 22:15:47.083 | Use Ctrl-C to stop
