@@ -104,7 +104,7 @@ Visit `http://localhost:3000` to access your development instance.
 ### Advanced Integrations
 - **Plaid Integration**: Connect 10,000+ financial institutions
 - **Yahoo Finance**: Real-time exchange rates and market data
-- **AI Assistant**: Claude AI for financial insights and Q&A
+- **AI Assistant**: OpenAI for financial insights and Q&A
 - **Import/Export**: CSV import with intelligent mapping
 
 ### Enhanced Features (FinKey Exclusive)
@@ -130,7 +130,7 @@ We welcome contributions! Please read our [Contributing Guide](CONTRIBUTING.md) 
 This project is a fork of Maybe Finance (https://github.com/maybe-finance/maybe) and includes significant enhancements:
 - Original Maybe Finance codebase (AGPLv3)
 - Yahoo Finance integration for real-time data
-- Claude AI integration for financial insights
+- OpenAI integration for financial insights
 - Advanced expense reimbursement system
 - Enhanced Docker deployment setup
 
